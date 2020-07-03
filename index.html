@@ -1,151 +1,108 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
-
-#gender {
-  font: 25px sans-serif;
-  text-anchor: middle;
-}
-  
-#percent {
-  font: 35px sans-serif;
-  text-anchor: middle;
-}
-.text_leg {
-  font: 20px sans-serif;  
-}
-.tittle {
-  font: 40px sans-serif;  
-}
-.arc path {
-  stroke: #fff;
-}
-
-</style>
-<svg width="960" height="500"></svg>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
-<script src="https://d3js.org/d3-color.v1.min.js"></script>
-<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
-<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-<script>
-  var svg = d3.select("svg"),
-      width = +svg.attr("width"),
-      height = +svg.attr("height"),
-      radius = Math.min(width, height) / 2,
-      // donut chart
-      g = svg.append("g").attr("transform", "translate(" + width / 3 + "," + height / 2 + ")");
-  var tittle = svg.append("g").attr("transform", "translate(66,59)");
-  tittle.append("text").attr("class","tittle").text("Gender");
-  var f = d3.format(".0f");
-  
-  		// legend
-  var g2 = svg.append("g").attr("transform", "translate(" + width*1.8 / 3 + "," + height / 3 + ")");
-
-//   var color = d3.scaleOrdinal(["#89e9ff", "#99b2ff", "#ffb432"]);
-  var color_light = d3.scaleOrdinal
-  										(["#a6cee3","#b2df8a","#fb9a99","#fdbf6f","#cab2d6","#ffff99"]);
-  var color_dark = d3.scaleOrdinal
-  										(["#1f78b4","#33a02c","#e31a1c","#ff7f00","#6a3d9a","#b15928"]);
-
-  var pie = d3.pie()
-      .sort(null)
-      .value(function(d) { return d.percent; });
-
-  var path = d3.arc()
-      .outerRadius(radius*0.8)
-      .innerRadius(radius*0.4);
-  
-  var path_big = d3.arc()
-      .outerRadius(radius*0.85)
-      .innerRadius(radius*0.4);
-
-
-  var label = d3.arc()
-      .outerRadius(0)
-      .innerRadius(0);
-
-//   d3.csv("gender.csv", function(d) {
-  d3.csv("age.csv", function(d) {
-    d.percent = +d.percent;
-    return d;
-  }, function(error, data) {
-    if (error) throw error;
-    var arc = g.selectAll(".arc")
-      .data(pie(data))
-      .enter().append("g")
-      .attr("class", "arc");
-		
-    arc.append("text")
-          .attr("class", "text")      
-          .attr("id", "percent")
-          .attr("transform", function(d) { return "translate(0,0)"; })
-          .text("");
-    arc.append("text")
-          .attr("class", "text")  
-          .attr("id", "gender")
-          .attr("transform", function(d) { return "translate(0,30)"; })
-          .text("");
-    
-    arc.append("path")
-        .attr("d", path)
-        .attr("class", "path")
-        .attr("fill", function(d) { return color_dark(d.data.gender); })
-    		.on("mouseover", function (d) {
-          mouseover(d.data.percent,d.data.gender);
-          d3.selectAll(".path").filter(function (e) { 
-            return e === d;                     
-          }).transition().duration(500).attr("d", path_big);
-          // highlight legend text
-          d3.selectAll(".text_leg").filter(function (e) {
-            return e === d.data;
-          }).attr("fill", "black");         
-          // highlight legend dot
-          d3.selectAll(".dot").filter(function (e) {
-            return e === d.data;
-          }).attr("fill", function(d) { return color_dark(d.gender); });   
-        }) 
-        .on("mouseout", function (d) {
-          d3.selectAll(".path").filter(function (e) {
-            return e === d;
-          }).transition().duration(500).attr("d", path);      
-          // un-highlight legend text
-          d3.selectAll(".text_leg").filter(function (e) {
-            return e === d.data;
-          }).attr("fill", "lightgrey");         
-          // un-highlight legend dot
-          d3.selectAll(".dot").filter(function (e) {
-            return e === d.data;
-          }).attr("fill", function(d) { return color_light(d.gender); });   
-          // delete middle chart text
-          d3.selectAll(".text").text("");
-        });
-    ;
-    function mouseover(perc,gend){ 
-      d3.selectAll("#percent").text(f(perc*100)+"%");
-      d3.selectAll("#gender").text(gend);
+<head>
+  <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style>
+    body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+    .title_text {
+      font: 20px sans-serif;
     }
-    // legend
-  	var len = data.length;
-  	var y = d3.scaleLinear()
-    					.range([0 + (75-len*10),height/3 - (75-len*10)]) // output
-    					.domain([0,data.length-1]); //input
-    g2.selectAll(".dot").data(data).enter()
-      .append("circle")
-    	.attr("class", "dot")
-    	.attr("cx", 50)    
-    	.attr("cy", function(d,i) {return y(i)})
-    	.attr("r", 15)            	
-      .attr("fill", function(d) { return color_light(d.gender); })
-    	;
-    g2.selectAll(".text_leg").data(data).enter()
-      .append("text")
-    	.attr("class", "text_leg")
-    	.attr("fill", "lightgrey")	
-    	.attr("x", 74)    
-    	.attr("y", function(d,i) {return y(i)+4.5733382144})
-    	.text(function(d){return d.gender;})    
-    	;
+    .bar {
+      fill: #7bdcc0;
+    }
+    .perc {
+      font: 14px sans-serif;
+    }
+    
+    .axis {
+      shape-rendering: crispEdges;
+    }
+
+    .x.axis line {
+      display: none;
+    }
+
+    .x.axis .minor {
+      stroke-opacity: .5;
+    }
+
+    .x.axis path {
+     	stroke : lightgrey;
+    }
+
+    .y.axis line,
+    .y.axis path {
+      fill: none;
+      stroke: #ffffff;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    var margin = {top: 10, right: 10, bottom: 10, left: 10},
+        w = 400,
+        h = 300;
+    var svg = d3.select("body").append("svg")
+                .attr("width", w)
+                .attr("height", h),
+        g_chart = svg.append("g").attr("transform","translate(10,100)"),
+    		g_title = svg.append("g").attr("transform","translate(10,46)");
+    
+  	var f = d3.format(".0f");
+    
+    g_title.append("text").attr("class","title_text").text("Country Audiences");
+		d3.csv("countries.csv", function(error, data) {
+    	if (error) throw error;
+      var y = d3.scaleLinear()
+          .domain([0, 1.1 * d3.max(data, function(d){ return +d.percent;})])
+          .range([h-100,0])
+          .nice();
+			console.log(data.map(function(d){ return d.country;})); 
+//       var x = d3.scaleBand()
+      var x = d3.scalePoint()
+//           .padding(0.1)
+          .domain(data.map(function(d){ return d.country;}))
+          .range([0, w - 170 - 40])
+      ;
+
+      var xAxis = d3.axisBottom()
+        .scale(x)
+      ;
+
+      var yAxis = d3.axisLeft()
+        .scale(y)
+      	.tickFormat( function(d) { return d + "%" } );
+      
+      var g_x = svg.append("g")
+      	.attr("class", "x axis")
+      	.attr("transform", "translate(45,"+ (h-40) +")")
+        .call(xAxis);
+      
+      var g_y = svg.append("g")
+      	.attr("class", "y axis")
+      	.attr("transform", "translate(30,60)")
+        .call(yAxis);
+      
+      var g_chart  = svg.append("g").attr("transform", "translate(30,60)");
+      
+      g_chart.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return x(d.country); })
+        .attr("y", function(d) { return y(d.percent); })
+      	.attr("width",30)
+      	.attr("height", function(d) { return h - 100 - y(d.percent); })
+      ;
+      g_chart.selectAll(".perc")
+        .data(data)
+        .enter().append("text")
+        .attr("class", "perc")
+        .attr("x", function(d) { return x(d.country); })
+        .attr("y", function(d) { return y(d.percent) - 3 ; })
+      	.text(function(d) { return f(d.percent) + "%"; })
+      ;
     });
-	
-</script>
+  </script>
+</body>
